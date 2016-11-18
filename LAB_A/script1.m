@@ -72,3 +72,10 @@ PID_P = (p2_D * p3_D + p1_D * p3_D + p1_D * p2_D - p2 * p3 - p1 * p3 - p1 * p2) 
 PID_I = (p1 * p2 * p3 - p1_D * p2_D * p3_D) / k;
 PID_D = (p1 + p2 + p3 - p1_D - p2_D - p3_D) / k;
 
+syms W; % closed loop tf
+%W = k * (s * PID_P + PID_I + s^2 * PID_D) / ( (s - p1) * (s - p2) * (s - p3) + k * (s * PID_P + PID_I + s^2 * PID_D) );
+W = tf([(k * PID_D) (k * PID_P) (k * PID_I)], [1 (PID_D * k - p1 - p2 - p3) (PID_P * k + p2 * p3 + p1 * p3 + p1 * p2) (PID_I * k - p1 * p2 * p3)]);
+%PID_tf = tf(pid(PID_P, PID_I, PID_D));
+%system_tf = tf([k 0], [1 (-p1 * -p2 * -p3) (p2 * p3 + p1 * p3 + p1 * p2) -(p1 * p2 * p3)]);
+%W = PID_tf * system_tf / (1 + PID_tf * system_tf);
+
