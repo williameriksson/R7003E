@@ -53,16 +53,11 @@ At = INV_M_g * M_a;
 Bt = INV_M_g * M_b;
 A = [0 0 1 0; At(1,:); 0 0 0 1; At(2,:)];
 B = [0 0; Bt(1,:); 0 0; Bt(2,:)];
-C = [1 0 0 0; 0 1 0 0; 1; 0]';
-D = [0 0];
-%syms x21 x22 x23 x24 x41 x42 x43 x44 s
-%fictionalA = [0 1 0 0; x21 x22 x23 x24; 0 0 0 1; x41 x42 x43 x44];
-%sI = [s 0 0 0; 0 s 0 0; 0 0 s 0; 0 0 0 s];
-%fictionalDiff = sI - fictionalA;
-%detFictionalDiff = det(fictionalDiff);
+C = [];%[1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1];
+D = [0 0; 0 0; 0 0; 0 0];
 
 sys = ss(A, B, C, D);
-[num, den] = ss2tf(A, B, C, D, 2);
+[num, den] = ss2tf(A, B, C, D, 2); % A, B, C, D, 2?
 [z, p, k] = tf2zp(num, den);
 
 p1 = p(2);
@@ -72,9 +67,12 @@ p1_D = p1;
 p2_D = -4;
 p3_D = p3;
 
-PID_P = (p2_D * p3_D + p1_D * p3_D + p1_D * p2_D - p2 * p3 - p1 * p3 - p1 * p2) / k;
+PID_P = ((p2_D * p3_D + p1_D * p3_D + p1_D * p2_D - p2 * p3 - p1 * p3 - p1 * p2) / k);
+PID_P = PID_P(1);
 PID_I = (p1 * p2 * p3 - p1_D * p2_D * p3_D) / k;
+PID_I = PID_I(1);
 PID_D = (p1 + p2 + p3 - p1_D - p2_D - p3_D) / k;
+PID_D = PID_D(1);
 
-syms W; % closed loop tf
-W = tf([(k * PID_D) (k * PID_P) (k * PID_I)], [1 (PID_D * k - p1 - p2 - p3) (PID_P * k + p2 * p3 + p1 * p3 + p1 * p2) (PID_I * k - p1 * p2 * p3)]);
+%syms W; % closed loop tf
+%W = tf([(k * PID_D) (k * PID_P) (k * PID_I)], [1 (PID_D * k - p1 - p2 - p3) (PID_P * k + p2 * p3 + p1 * p3 + p1 * p2) (PID_I * k - p1 * p2 * p3)]);
