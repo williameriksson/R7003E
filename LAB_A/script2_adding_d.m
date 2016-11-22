@@ -40,9 +40,9 @@ a23 = 0;
 a24 = ((K_t * K_e) / R_m) + b_f;
 
 b11 = -(K_t / R_m);
-b12 = l_w;
+b12 = l_b;
 b21 = K_t / R_m;
-b22 = l_b;
+b22 = l_w;
 
 
 M_a = [a11 a12 a13 a14; a21 a22 a23 a24];
@@ -75,7 +75,7 @@ p1 = p(2);
 p2 = p(3);
 p3 = p(4);
 p1_D = p1;
-p2_D = -4;
+p2_D = -10;
 p3_D = p3;
 
 PID_P = ((p2_D * p3_D + p1_D * p3_D + p1_D * p2_D - p2 * p3 - p1 * p3 - p1 * p2) / k);
@@ -84,3 +84,6 @@ PID_D = (p1 + p2 + p3 - p1_D - p2_D - p3_D) / k;
 
 syms W; % closed loop tf
 W = tf([(k * PID_D) (k * PID_P) (k * PID_I)], [1 (PID_D * k - p1 - p2 - p3) (PID_P * k + p2 * p3 + p1 * p3 + p1 * p2) (PID_I * k - p1 * p2 * p3)]);
+
+%C_TF = tf([PID_D PID_P PID_I], [1 0]);
+%C_FB_TF = C_TF / (1 + C_TF);

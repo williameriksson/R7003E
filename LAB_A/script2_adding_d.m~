@@ -38,6 +38,7 @@ a21 = 0;
 a22 = -((K_t * K_e) / (R_m * l_w)) - (b_f / l_w);
 a23 = 0;
 a24 = ((K_t * K_e) / R_m) + b_f;
+
 b11 = -(K_t / R_m);
 b12 = l_w;
 b21 = K_t / R_m;
@@ -45,19 +46,29 @@ b22 = l_b;
 
 
 M_a = [a11 a12 a13 a14; a21 a22 a23 a24];
-M_b = [b11 b12 ; b21 b22];
+M_b = [b11; b21];
+M_b_sim = [b11 b12 ; b21 b22];
 M_x = [x ; x_prim; o; o_prim];
 M_xo = [x_bis; o_bis];
+
 INV_M_g = inv(M_g);
+
 At = INV_M_g * M_a;
 Bt = INV_M_g * M_b;
-A = [0 0 1 0; At(1,:); 0 0 0 1; At(2,:)];
-B = [0 0; Bt(1,:); 0 0; Bt(2,:)];
-C = [];%[1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1];
-D = [0 0; 0 0; 0 0; 0 0];
+Bt_sim = INV_M_g * M_b_sim;
+
+A = [0 1 0 0; At(1,:); 0 0 0 1; At(2,:)];
+B = [0; Bt(1,:); 0; Bt(2,:)];
+C = [0 0 1 0];
+D = [0];
+
+B_sim = [0 0; Bt_sim(1,:); 0 0; Bt_sim(2,:)];
+C_sim = [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1];
+D_sim = [0 0; 0 0; 0 0; 0 0];
 
 sys = ss(A, B, C, D);
-[num, den] = ss2tf(A, B, C, D, 2); % A, B, C, D, 2?
+
+[num, den] = ss2tf(A, B, C, D);%, 2); % A, B, C, D, 2?
 [z, p, k] = tf2zp(num, den);
 
 p1 = p(2);
@@ -68,11 +79,10 @@ p2_D = -4;
 p3_D = p3;
 
 PID_P = ((p2_D * p3_D + p1_D * p3_D + p1_D * p2_D - p2 * p3 - p1 * p3 - p1 * p2) / k);
-PID_P = PID_P(1);
 PID_I = (p1 * p2 * p3 - p1_D * p2_D * p3_D) / k;
-PID_I = PID_I(1);
 PID_D = (p1 + p2 + p3 - p1_D - p2_D - p3_D) / k;
-PID_D = PID_D(1);
 
-%syms W; % closed loop tf
-%W = tf([(k * PID_D) (k * PID_P) (k * PID_I)], [1 (PID_D * k - p1 - p2 - p3) (PID_P * k + p2 * p3 + p1 * p3 + p1 * p2) (PID_I * k - p1 * p2 * p3)]);
+syms W; % closed loop tf
+W = tf([(k * PID_D) (k * PID_P) (k * PID_I)], [1 (PID_D * k - p1 - p2 - p3) (PID_P * k + p2 * p3 + p1 * p3 + p1 * p2) (PID_I * k - p1 * p2 * p3)]);
+
+PID_C_TF = tf([PID_D PID_P], PID_I)
