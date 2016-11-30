@@ -74,9 +74,12 @@ sys = ss(A, B, C, D);
 p1 = p(2);
 p2 = p(3);
 p3 = p(4);
+p4 = p(1);
+
 p1_D = p1;
 p2_D = -10;
 p3_D = p3;
+p4_D = p4;
 
 PID_P = ((p2_D * p3_D + p1_D * p3_D + p1_D * p2_D - p2 * p3 - p1 * p3 - p1 * p2) / k);
 PID_I = (p1 * p2 * p3 - p1_D * p2_D * p3_D) / k;
@@ -85,5 +88,15 @@ PID_D = (p1 + p2 + p3 - p1_D - p2_D - p3_D) / k;
 syms W; % closed loop tf
 W = tf([(k * PID_D) (k * PID_P) (k * PID_I)], [1 (PID_D * k - p1 - p2 - p3) (PID_P * k + p2 * p3 + p1 * p3 + p1 * p2) (PID_I * k - p1 * p2 * p3)]);
 
+O_M3 = obsv(A(1:3, 1:3), C(:, 1:3));
+O_M = obsv(A,C);
+
+C_M3 = ctrb(A(1:3, 1:3), B(1:3, :));
+C_M = ctrb(A, B);
 % C_TF = tf([PID_D PID_P PID_I], [1 0]);
 % C_FB_TF = C_TF / (1 + C_TF);
+s = tf('s');
+[W_num, W_den] = tfdata(W, 'v');
+[part_f_num, part_f_den, part_f_const] = residue(W_num, W_den);
+
+SO_TF = (part_f_num(2) / (s - part_f_den(2) + part_f_num(3) / (s - part_f_den(3))));
